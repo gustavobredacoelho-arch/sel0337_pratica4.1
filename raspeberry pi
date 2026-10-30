@@ -1,36 +1,20 @@
-#include <Wire.h>
+import smbus
 
-// Definição do endereço I2C do Arduino (deve ser o mesmo na Raspberry Pi)
-const int ENDERECO_I2C = 0x08;
+ENDERECO = 0x08          # mesmo endereco do Arduino
+bus = smbus.SMBus(1)     # barramento I2C 1 (GPIO2 = SDA, GPIO3 = SCL)
 
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(9600);
-  
-  // Inicializa o barramento I2C como dispositivo controlado (responder/slave)
-  Wire.begin(ENDERECO_I2C);
-  Wire.onReceive(receiveEvent);
-  
-  Serial.println("Arduino inicializado no barramento I2C.");
-}
+print("Digite 1 para acender, 0 para apagar, outro valor para sair.")
 
-void loop() {
-  delay(100);
-}
+while True:
+    entrada = input("Comando: ").strip()
+    if entrada == "1":
+        bus.write_byte(ENDERECO, 1)
+        print("LED aceso")
+    elif entrada == "0":
+        bus.write_byte(ENDERECO, 0)
+        print("LED apagado")
+    else:
+        print("Encerrando programa.")
+        break
 
-// Função executada automaticamente quando a Raspberry Pi envia dados
-void receiveEvent(int howMany) {
-  if (Wire.available()) {
-    int comando = Wire.read();
-    Serial.print("Comando recebido: ");
-    Serial.println(comando);
-    
-    if (comando == 1) {
-      digitalWrite(LED_BUILTIN, HIGH);
-      Serial.println("Estado: LED ACESO");
-    } else if (comando == 0) {
-      digitalWrite(LED_BUILTIN, LOW);
-      Serial.println("Estado: LED APAGADO");
-    }
-  }
-}
+bus.close()
